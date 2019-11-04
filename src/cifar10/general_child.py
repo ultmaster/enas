@@ -291,8 +291,9 @@ class GeneralChild(Model):
           y = self._pool_branch(inputs, is_training, out_filters, "max",
                                 start_idx=0)
         branches[tf.equal(count, 5)] = lambda: y
-      out = tf.case(branches, default=lambda: tf.constant(0, tf.float32),
-                    shape=[self.batch_size, out_filters, inp_h, inp_w], exclusive=True)
+      out = tf.case(branches,
+                    default=lambda: tf.constant(0, tf.float32, shape=[self.batch_size, out_filters, inp_h, inp_w]),
+                    exclusive=True)
       # https://github.com/melodyguan/enas/issues/4
       # if self.data_format == "NHWC":
       #   out.set_shape([None, inp_h, inp_w, out_filters])
