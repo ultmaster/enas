@@ -292,12 +292,12 @@ class GeneralChild(Model):
                                 start_idx=0)
         branches[tf.equal(count, 5)] = lambda: y
       out = tf.case(branches, default=lambda: tf.constant(0, tf.float32),
-                    exclusive=True)
-
-      if self.data_format == "NHWC":
-        out.set_shape([None, inp_h, inp_w, out_filters])
-      elif self.data_format == "NCHW":
-        out.set_shape([None, out_filters, inp_h, inp_w])
+                    shape=[self.batch_size, out_filters, inp_h, inp_w], exclusive=True)
+      # https://github.com/melodyguan/enas/issues/4
+      # if self.data_format == "NHWC":
+      #   out.set_shape([None, inp_h, inp_w, out_filters])
+      # elif self.data_format == "NCHW":
+      #   out.set_shape([None, out_filters, inp_h, inp_w])
     else:
       count = self.sample_arc[start_idx:start_idx + 2 * self.num_branches]
       branches = []
