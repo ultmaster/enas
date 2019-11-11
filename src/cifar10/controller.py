@@ -1,15 +1,9 @@
-import sys
-import os
-import time
-
-import numpy as np
 import tensorflow as tf
 
+from src.common_ops import stack_lstm
 from src.controller import Controller
 from src.utils import get_train_ops
-from src.common_ops import stack_lstm
 
-from tensorflow.python.training import moving_averages
 
 class ConvController(Controller):
   def __init__(self,
@@ -36,14 +30,14 @@ class ConvController(Controller):
                num_replicas=None,
                name="controller"):
 
-    print "-" * 80
-    print "Building ConvController"
+    print("-" * 80)
+    print("Building ConvController")
 
     self.num_branches = num_branches
     self.num_layers = num_layers
     self.num_blocks_per_branch = num_blocks_per_branch
     self.lstm_size = lstm_size
-    self.lstm_num_layers = lstm_num_layers 
+    self.lstm_num_layers = lstm_num_layers
     self.lstm_keep_prob = lstm_keep_prob
     self.tanh_constant = tanh_constant
     self.temperature = temperature
@@ -69,7 +63,7 @@ class ConvController(Controller):
     with tf.variable_scope(self.name):
       with tf.variable_scope("lstm"):
         self.w_lstm = []
-        for layer_id in xrange(self.lstm_num_layers):
+        for layer_id in range(self.lstm_num_layers):
           with tf.variable_scope("layer_{}".format(layer_id)):
             w = tf.get_variable("w", [2 * self.lstm_size, 4 * self.lstm_size])
             self.w_lstm.append(w)
@@ -96,11 +90,11 @@ class ConvController(Controller):
     # sampler ops
     inputs = self.g_emb
     prev_c = [tf.zeros([1, self.lstm_size], dtype=tf.float32)
-              for _ in xrange(self.lstm_num_layers)]
+              for _ in range(self.lstm_num_layers)]
     prev_h = [tf.zeros([1, self.lstm_size], dtype=tf.float32)
-              for _ in xrange(self.lstm_num_layers)]
-    for layer_id in xrange(self.num_layers):
-      for branch_id in xrange(self.num_branches):
+              for _ in range(self.lstm_num_layers)]
+    for layer_id in range(self.num_layers):
+      for branch_id in range(self.num_branches):
         next_c, next_h = stack_lstm(inputs, prev_c, prev_h, self.w_lstm)
         all_h.append(tf.stop_gradient(next_h[-1]))
 
@@ -170,9 +164,9 @@ class ConvController(Controller):
     tf_variables = [var for var in tf.trainable_variables()
                     if var.name.startswith(self.name)
                       and "w_critic" not in var.name]
-    print "-" * 80
+    print("-" * 80)
     for var in tf_variables:
-      print var
+      print(var)
     self.train_op, self.lr, self.grad_norm, self.optimizer = get_train_ops(
       self.loss,
       tf_variables,
